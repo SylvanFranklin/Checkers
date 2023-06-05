@@ -1,4 +1,3 @@
-
 import { createSignal, For, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import {
@@ -50,7 +49,7 @@ function BoardSquare(props: { square: Square; isBlack: boolean; id: number }) {
   );
 }
 
-export function GameBoard() {
+export function GameBoard(props: { redActive: boolean; toggle: Function }) {
   const [clickedIndex, setClickedIndex] = createSignal<Pos | undefined>();
   const [board, setBoard] = createStore<Board>(defaultBoard());
 
@@ -68,21 +67,30 @@ export function GameBoard() {
                       const squareData = board[pos.x][pos.y];
 
                       if (squareData.state.type == 1) {
-                        setBoard(clearTrace(board));
-                        const [tracedBoard, legalMoveCount] =
-                          calculateLegalMoves(board, pos);
-                        if (legalMoveCount > 0) {
-                          setClickedIndex(pos);
-                          setBoard(tracedBoard);
+                        if (
+                          ((square.state as Checker).isRed &&
+                            props.redActive) ||
+                          (!(square.state as Checker).isRed && !props.redActive)
+                        ) {
+                          setBoard(clearTrace(board));
+                          const [tracedBoard, legalMoveCount] =
+                            calculateLegalMoves(board, pos);
+                          if (legalMoveCount > 0) {
+                            setClickedIndex(pos);
+                            setBoard(tracedBoard);
+                          }
                         }
                       } else if (squareData.trace && clickedIndex()) {
-                        const [newBoard, sucsess] = SwapPositions(
+                        const [newBoard, sucess, jumped] = SwapPositions(
                           board,
                           pos,
                           clickedIndex() as Pos
                         );
-                        if (sucsess) {
+                        if (sucess) {
                           setBoard(newBoard);
+                          if (!jumped) {
+                            props.toggle()
+                          }
                         }
                       }
                     }}
@@ -106,4 +114,3 @@ export function GameBoard() {
     </ol>
   );
 }
-

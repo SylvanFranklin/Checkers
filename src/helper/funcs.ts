@@ -29,14 +29,15 @@ export function SwapPositions(
   board: Board,
   target: Pos,
   checker: Pos
-): [Board, boolean] {
+): [Board, boolean, boolean] {
   if (!board[target.x][target.y].trace) {
-    return [board, false];
+    return [board, false, false];
   }
   const copy = deepClone(board);
   const temp = copy[target.x][target.y];
   copy[target.x][target.y] = copy[checker.x][checker.y];
   copy[checker.x][checker.y] = temp;
+  let jumped = false;
 
   const dir = {
     x: Math.floor(target.x - checker.x),
@@ -55,6 +56,7 @@ export function SwapPositions(
 
   if (jumpedPos.x >= 0 && jumpedPos.y >= 0) {
     copy[jumpedPos.x][jumpedPos.y] = { trace: false, state: { type: 0 } };
+    jumped = true;
   }
 
   // check if ricochet has occured
@@ -64,6 +66,7 @@ export function SwapPositions(
       trace: false,
       state: { type: 0 },
     };
+    jumped = true;
   }
   // this handels horizontal
   if (Math.abs(dir.x) == 2 && dir.y == 0) {
@@ -71,6 +74,7 @@ export function SwapPositions(
       trace: false,
       state: { type: 0 },
     };
+    jumped = true;
   }
 
   // this handels pieces moving to the end
@@ -89,7 +93,7 @@ export function SwapPositions(
     };
   }
 
-  return [clearTrace(copy), true];
+  return [clearTrace(copy), true, jumped];
 }
 
 export function devBoard(): Board {
